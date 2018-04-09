@@ -15,6 +15,8 @@ class UserTableViewController: UITableViewController {
     var usernames = [""]
     var isFollowing = ["":false]
     
+    var refresher: UIRefreshControl = UIRefreshControl()
+    
     @IBAction func logoutUser(_ sender: Any) {
         
         PFUser.logOut()
@@ -23,9 +25,7 @@ class UserTableViewController: UITableViewController {
         
     }
     
-    override func viewDidLoad() {
-        super.viewDidLoad()
-
+    @objc func updateTable(){
         let query = PFUser.query()
         
         query?.whereKey("username", notEqualTo: PFUser.current()?.username)
@@ -41,13 +41,13 @@ class UserTableViewController: UITableViewController {
                 self.usernames.removeAll()
                 self.objectIds.removeAll()
                 self.isFollowing.removeAll()
-
+                
                 for object in users {
                     
                     if let user = object as? PFUser {
-                    
-                        if let username = user.username {
                         
+                        if let username = user.username {
+                            
                             if let objectId = user.objectId {
                                 let usernameArray = username.components(separatedBy: "@")
                                 self.usernames.append(usernameArray[0])
@@ -66,21 +66,36 @@ class UserTableViewController: UITableViewController {
                                             self.isFollowing[objectId] = false
                                         }
                                         
+                                        if self.usernames.count == self.isFollowing.count {
+                                        
                                         self.tableView.reloadData()
-
+                                        
+                                        self.refresher.endRefreshing()
+                                        }
+                                        
                                     }
                                 })
                                 
+                            }
                         }
                     }
-                }
                     
-            }
+                }
                 
-        }
+            }
             
         })
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
 
+        updateTable()
+        
+        refresher.attributedTitle = NSAttributedString(string: "Pull to refresh")
+        refresher.addTarget(self, action: #selector(UserTableViewController.updateTable), for: UIControlEvents.valueChanged)
+        
+        tableView.addSubview(refresher)
     }
 
     override func didReceiveMemoryWarning() {
