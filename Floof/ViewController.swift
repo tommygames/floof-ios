@@ -26,7 +26,7 @@ class ViewController: UIViewController {
         self.present(alert, animated: true, completion: nil)
         
     }
-
+    
     @IBOutlet weak var email: UITextField!
     
     @IBOutlet weak var password: UITextField!
@@ -63,17 +63,17 @@ class ViewController: UIViewController {
                     
                     activityIndicator.stopAnimating()
                     UIApplication.shared.endIgnoringInteractionEvents()
-
-                        if let error = error {
-                            
-                            self.displayAlert(title: "Could not sign you up", message: error.localizedDescription)
-                            
-                            print (error)
-                        } else {
-
-                    print("Signed up!")
-                            
-                            self.performSegue(withIdentifier: "showUserTable", sender: self)
+                    
+                    if let error = error {
+                        
+                        self.displayAlert(title: "Could not sign you up", message: error.localizedDescription)
+                        
+                        print (error)
+                    } else {
+                        
+                        print("Signed up!")
+                        
+                        self.performSegue(withIdentifier: "showUserTable", sender: self)
                     }
                 })
             } else {
@@ -87,7 +87,7 @@ class ViewController: UIViewController {
                         
                         print("Login successful!")
                         self.performSegue(withIdentifier: "showUserTable", sender: self)
-
+                        
                     } else {
                         
                         var errorText = "Unkown error: please try again"
@@ -95,9 +95,9 @@ class ViewController: UIViewController {
                         if let error = error {
                             errorText = error.localizedDescription
                         }
-                    
-                    self.displayAlert(title: "Could not sign you up", message: errorText)
-                }
+                        
+                        self.displayAlert(title: "Could not sign you up", message: errorText)
+                    }
                     
                 }
                 
@@ -137,12 +137,12 @@ class ViewController: UIViewController {
         // Do any additional setup after loading the view, typically from a nib.
         
     }
-
+    
     
     override func viewDidAppear(_ animated: Bool) {
         
         if PFUser.current() != nil {
-        self.performSegue(withIdentifier: "showUserTable", sender: self)
+            self.performSegue(withIdentifier: "showUserTable", sender: self)
         }
         
         self.navigationController?.navigationBar.isHidden = true
@@ -153,7 +153,7 @@ class ViewController: UIViewController {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-
-
+    
+    
 }
 

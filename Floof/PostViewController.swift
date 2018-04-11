@@ -10,7 +10,7 @@ import UIKit
 import Parse
 
 class PostViewController: UIViewController, UINavigationControllerDelegate, UIImagePickerControllerDelegate {
-
+    
     @IBOutlet weak var imageToPost: UIImageView!
     @IBOutlet weak var comment: UITextField!
     
@@ -52,10 +52,10 @@ class PostViewController: UIViewController, UINavigationControllerDelegate, UIIm
     @IBAction func postImage(_ sender: Any) {
         
         if let image = imageToPost.image {
-        let post = PFObject(className: "Post")
-        
-        post["message"] = comment.text
-        post["userid"] = PFUser.current()?.objectId
+            let post = PFObject(className: "Post")
+            
+            post["message"] = comment.text
+            post["userid"] = PFUser.current()?.objectId
             if let imageData = UIImagePNGRepresentation(image) {
                 
                 let activityIndicator = UIActivityIndicatorView(frame: CGRect(x: 0, y: 0, width: 100, height: 100))
@@ -101,24 +101,24 @@ class PostViewController: UIViewController, UINavigationControllerDelegate, UIIm
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         // Do any additional setup after loading the view.
     }
-
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
     
-
+    
     /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
-    }
-    */
-
+     // MARK: - Navigation
+     
+     // In a storyboard-based application, you will often want to do a little preparation before navigation
+     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+     // Get the new view controller using segue.destinationViewController.
+     // Pass the selected object to the new view controller.
+     }
+     */
+    
 }
