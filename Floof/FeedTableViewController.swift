@@ -36,7 +36,7 @@ class FeedTableViewController: UITableViewController {
         screenWidth = screenRect.size.width
         screenHeight = screenRect.size.height
         
-        // initialized to first indexpath
+        //Initialized to first indexpath
         visibleIP = IndexPath.init(row: 0, section: 0)
         
         let query = PFUser.query()
@@ -78,7 +78,7 @@ class FeedTableViewController: UITableViewController {
                                     for post in posts {
                                         
                                         //****** need to add if let statements for optional handling *******
-                                        //****** should add chronological order to images
+                                        //****** should add chronological order to videos
                                         
                                         self.comments.append(post["message"] as! String)
                                         self.usernames.append(self.users[post["userid"] as! String]!)
@@ -124,7 +124,6 @@ class FeedTableViewController: UITableViewController {
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {        
-        //Thats it, just provide the URL from here, it will change with didSet Method in your custom cell class
         let cell = tableView.dequeueReusableCell(withIdentifier: "videoCell") as! FeedTableViewCell
             if !videoUrls[indexPath.row].isEmpty {
                 
@@ -147,6 +146,7 @@ class FeedTableViewController: UITableViewController {
     
     
     override func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        //detect visible cells to play video in UITableView
         let indexPaths = tableView.indexPathsForVisibleRows
         var cells = [Any]()
         for ip in indexPaths!{
@@ -168,12 +168,11 @@ class FeedTableViewController: UITableViewController {
             for i in 0..<cellCount{
                 let cellRect = tableView.rectForRow(at: (indexPaths?[i])!)
                 let intersect = cellRect.intersection(tableView.bounds)
-                //                currentHeight is the height of the cell that
-                //                is visible
+                //currentHeight is the height of the cell that is visible
                 let currentHeight = intersect.height
                 print("\n \(currentHeight)")
                 let cellHeight = (cells[i] as AnyObject).frame.size.height
-                //                0.20 is percent of cell that is visible
+                //0.20 is percent of cell that is visible
                 if currentHeight > (cellHeight * 0.20){
                     if visibleIP != indexPaths?[i]{
                         visibleIP = indexPaths?[i]

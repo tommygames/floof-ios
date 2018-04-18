@@ -15,7 +15,6 @@ class FeedTableViewCell: UITableViewCell {
     @IBOutlet weak var comment: UILabel!
     @IBOutlet weak var userInfo: UILabel!
     
-    // I have put the avplayer layer on this view
     var avPlayer: AVPlayer?
     var avPlayerLayer: AVPlayerLayer?
     var paused: Bool = false
@@ -29,7 +28,7 @@ class FeedTableViewCell: UITableViewCell {
     
     override func awakeFromNib() {
         super.awakeFromNib()
-        //Setup you avplayer while the cell is created
+        //Setup avplayer while the cell is created
         self.setupMoviePlayer()
     }
     
@@ -43,7 +42,7 @@ class FeedTableViewCell: UITableViewCell {
         let screenWidth = screenRect.size.width
         let screenHeight = screenRect.size.height
         
-        //        Different variations for different devices
+        //Different variations for different devices
         if UIScreen.main.bounds.width == 375 {
             avPlayerLayer?.frame = CGRect.init(x: -5, y: 45, width: screenWidth+15, height: screenHeight - 160)
             avPlayerLayer?.backgroundColor = UIColor(red: 0.1, green: 0.1, blue: 0.1, alpha: 0.05).cgColor
@@ -61,7 +60,7 @@ class FeedTableViewCell: UITableViewCell {
         self.layer.insertSublayer(avPlayerLayer!, at: 0)
 
         
-        // This notification is fired when the video ends, you can handle it in the method.
+        // This notification is fired when the video ends
         NotificationCenter.default.addObserver(self,
                                                selector: #selector(self.playerItemDidReachEnd(notification:)),
                                                name: NSNotification.Name.AVPlayerItemDidPlayToEndTime,
