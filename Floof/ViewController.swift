@@ -31,6 +31,8 @@ class ViewController: UIViewController {
     
     @IBOutlet weak var password: UITextField!
     
+    @IBOutlet weak var username: UITextField!
+    
     @IBAction func signupOrLogin(_ sender: Any) {
         
         if email.text == "" || password.text == "" {
@@ -55,7 +57,7 @@ class ViewController: UIViewController {
             
             if (signupModeActive) {
                 let user = PFUser()
-                user.username = email.text
+                user.username = username.text
                 user.password = password.text
                 user.email = email.text
                 
@@ -113,12 +115,16 @@ class ViewController: UIViewController {
         
         if (signupModeActive) {
             signupModeActive = false
+
+            username.alpha = 0;
             
             signupOrLoginButton.setTitle("Log In", for: [])
             
             switchLoginModeButton.setTitle("Sign Up", for: [])
         } else {
             signupModeActive = true
+            
+            username.alpha = 1;
             
             signupOrLoginButton.setTitle("Sign Up", for: [])
             

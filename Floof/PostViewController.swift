@@ -62,6 +62,7 @@ class PostViewController: UIViewController, UINavigationControllerDelegate, UIIm
             
             post["message"] = comment.text
             post["userid"] = PFUser.current()?.objectId
+            post["likes"] = 0
             
                 let activityIndicator = UIActivityIndicatorView(frame: CGRect(x: 0, y: 0, width: 100, height: 100))
                 

@@ -11,13 +11,20 @@ import Parse
 import AVFoundation
 import AVKit
 
-class FeedTableViewController: UITableViewController {
+protocol TableViewCellDelegate {
+    func tableViewCell(doubleTapActionDelegatedFrom cell: FeedTableViewCell)
+}
+
+class FeedTableViewController: UITableViewController, TableViewCellDelegate {
     
     var users = [String: String]()
     var comments = [String]()
     var usernames = [String]()
     var videoFiles = [PFFile]()
     var videoUrls = [String]()
+    var videoIds = [String]()
+    var likes = [Int]()
+
     
     var aboutToBecomeInvisibleCell = -1
     var avPlayerLayer: AVPlayerLayer!
@@ -82,8 +89,9 @@ class FeedTableViewController: UITableViewController {
                                         
                                         self.comments.append(post["message"] as! String)
                                         self.usernames.append(self.users[post["userid"] as! String]!)
-//                                        self.videoFiles.append(post["videoFile"] as! PFFile)
+                                        self.videoIds.append(post.objectId!)
                                         self.videoUrls.append((post["videoFile"] as! PFFile).url!)
+                                        self.likes.append(post["likes"] as! Int)
                                         
                                         self.tableView.reloadData()
                                         
@@ -137,13 +145,15 @@ class FeedTableViewController: UITableViewController {
         
         cell.comment.text = comments[indexPath.row]
         cell.userInfo.text = usernames[indexPath.row]
+        cell.likes.text = "\(likes[indexPath.row]) likes"
+        cell.videoId = videoIds[indexPath.row]
+        cell.delegate = self
         tableView.rowHeight = screenHeight - 70
         
         
         return cell
     }
-    
-    
+
     
     override func scrollViewDidScroll(_ scrollView: UIScrollView) {
         //detect visible cells to play video in UITableView
@@ -208,6 +218,40 @@ class FeedTableViewController: UITableViewController {
         if let videoCell = cell as? FeedTableViewCell {
             videoCell.stopPlayback()
         }
+    }
+    
+        func tableViewCell(doubleTapActionDelegatedFrom cell: FeedTableViewCell) {
+            let indexPath = self.tableView.indexPath(for: cell)
+            
+            let getLikesQuery = PFQuery(className: "Post")
+            getLikesQuery.whereKey("objectId", equalTo: cell.videoId)
+            getLikesQuery.findObjectsInBackground(block: { (objects, error) in
+                
+                if let posts = objects {
+                    
+                    for post in posts {
+                        
+                        var temp = post["likes"] as! Int
+                        temp += 1
+                        post["likes"] = temp
+
+                        post.saveInBackground { (success, error) in
+                            
+                            if error != nil {
+                                
+                                print ("Error: Could not like video")
+                                
+                            } else {
+                                cell.likes.text = "\(temp) likes"
+
+                            }
+                        }
+                        
+                    }
+                    
+                }
+                
+            })
     }
     
     /*

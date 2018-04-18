@@ -14,6 +14,10 @@ class FeedTableViewCell: UITableViewCell {
 
     @IBOutlet weak var comment: UILabel!
     @IBOutlet weak var userInfo: UILabel!
+    @IBOutlet weak var likes: UILabel!
+    
+    var videoId: String?
+    var delegate: TableViewCellDelegate?
     
     var avPlayer: AVPlayer?
     var avPlayerLayer: AVPlayerLayer?
@@ -30,6 +34,9 @@ class FeedTableViewCell: UITableViewCell {
         super.awakeFromNib()
         //Setup avplayer while the cell is created
         self.setupMoviePlayer()
+        let tap = UITapGestureRecognizer(target: self, action: #selector(doubleTapped))
+        tap.numberOfTapsRequired = 2
+        addGestureRecognizer(tap)
     }
     
     func setupMoviePlayer(){
@@ -44,17 +51,17 @@ class FeedTableViewCell: UITableViewCell {
         
         //Different variations for different devices
         if UIScreen.main.bounds.width == 375 {
-            avPlayerLayer?.frame = CGRect.init(x: -5, y: 45, width: screenWidth+15, height: screenHeight - 160)
+            avPlayerLayer?.frame = CGRect.init(x: 0, y: 45, width: screenWidth, height: screenHeight - 180)
             avPlayerLayer?.backgroundColor = UIColor(red: 0.1, green: 0.1, blue: 0.1, alpha: 0.05).cgColor
-            print("first")
+            print("iphone 6")
         }else if UIScreen.main.bounds.width == 320 {
-            avPlayerLayer?.frame = CGRect.init(x: -5, y: 45, width: screenWidth+15, height: screenHeight - 160)
+            avPlayerLayer?.frame = CGRect.init(x: -5, y: 45, width: screenWidth+15, height: screenHeight - 180)
             avPlayerLayer?.backgroundColor = UIColor(red: 0.1, green: 0.1, blue: 0.1, alpha: 0.05).cgColor
             print("second")
         }else{
-            avPlayerLayer?.frame = CGRect.init(x: -5, y: 45, width: screenWidth+15, height: screenHeight - 160)
+            avPlayerLayer?.frame = CGRect.init(x: -5, y: 45, width: screenWidth+15, height: screenHeight - 180)
             avPlayerLayer?.backgroundColor = UIColor(red: 0.1, green: 0.1, blue: 0.1, alpha: 0.05).cgColor
-            print("third")
+            print("iphone 8")
         }
         self.backgroundColor = .clear
         self.layer.insertSublayer(avPlayerLayer!, at: 0)
@@ -80,6 +87,11 @@ class FeedTableViewCell: UITableViewCell {
         let p: AVPlayerItem = notification.object as! AVPlayerItem
         p.seek(to: kCMTimeZero)
     }
+    
+    @objc func doubleTapped() {
+        delegate?.tableViewCell(doubleTapActionDelegatedFrom: self)
+    }
+    
     
 }
 
