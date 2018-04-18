@@ -8,17 +8,36 @@
 
 import UIKit
 import Parse
+import AVFoundation
+import AVKit
 
 class FeedTableViewController: UITableViewController {
     
     var users = [String: String]()
     var comments = [String]()
     var usernames = [String]()
-    var imageFiles = [PFFile]()
+    var videoFiles = [PFFile]()
+    var videoUrls = [String]()
+    
+    var aboutToBecomeInvisibleCell = -1
+    var avPlayerLayer: AVPlayerLayer!
+    var firstLoad = true
+    var visibleIP : IndexPath?
+    
+    var screenRect = CGRect()
+    var screenWidth = CGFloat()
+    var screenHeight = CGFloat()
     
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        screenRect = UIScreen.main.bounds
+        screenWidth = screenRect.size.width
+        screenHeight = screenRect.size.height
+        
+        // initialized to first indexpath
+        visibleIP = IndexPath.init(row: 0, section: 0)
         
         let query = PFUser.query()
         query?.whereKey("Username", notEqualTo: PFUser.current()?.username)
@@ -63,7 +82,8 @@ class FeedTableViewController: UITableViewController {
                                         
                                         self.comments.append(post["message"] as! String)
                                         self.usernames.append(self.users[post["userid"] as! String]!)
-                                        self.imageFiles.append(post["imageFile"] as! PFFile)
+//                                        self.videoFiles.append(post["videoFile"] as! PFFile)
+                                        self.videoUrls.append((post["videoFile"] as! PFFile).url!)
                                         
                                         self.tableView.reloadData()
                                         
@@ -103,31 +123,93 @@ class FeedTableViewController: UITableViewController {
         return comments.count
     }
     
-    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath) as! FeedTableViewCell
-        
-        imageFiles[indexPath.row].getDataInBackground { (data, error) in
-            
-            if let imageData = data {
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {        
+        //Thats it, just provide the URL from here, it will change with didSet Method in your custom cell class
+        let cell = tableView.dequeueReusableCell(withIdentifier: "videoCell") as! FeedTableViewCell
+            if !videoUrls[indexPath.row].isEmpty {
                 
-                if let imageToDisplay = UIImage(data: imageData) {
-                    
-                    cell.postedImage.image = imageToDisplay
-                    
-                }
+                let videoUrlString = self.videoUrls[indexPath.row]
+                    let videoUrl = NSURL(string: videoUrlString)!
+                    cell.videoPlayerItem = AVPlayerItem.init(url: videoUrl as URL)
                 
-            }
-            
+            } else {
+                print("Error: No video url was found.")
         }
         
         cell.comment.text = comments[indexPath.row]
         cell.userInfo.text = usernames[indexPath.row]
-        tableView.rowHeight = 236
+        tableView.rowHeight = screenHeight - 70
         
         
         return cell
     }
     
+    
+    
+    override func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        let indexPaths = tableView.indexPathsForVisibleRows
+        var cells = [Any]()
+        for ip in indexPaths!{
+            if let videoCell = tableView.cellForRow(at: ip) as? FeedTableViewCell{
+                cells.append(videoCell)
+            }
+        }
+        let cellCount = cells.count
+        if cellCount == 0 {return}
+        if cellCount == 1{
+            if visibleIP != indexPaths?[0]{
+                visibleIP = indexPaths?[0]
+            }
+            if let videoCell = cells.last! as? FeedTableViewCell{
+                self.playVideoOnTheCell(cell: videoCell, indexPath: (indexPaths?.last)!)
+            }
+        }
+        if cellCount >= 2 {
+            for i in 0..<cellCount{
+                let cellRect = tableView.rectForRow(at: (indexPaths?[i])!)
+                let intersect = cellRect.intersection(tableView.bounds)
+                //                currentHeight is the height of the cell that
+                //                is visible
+                let currentHeight = intersect.height
+                print("\n \(currentHeight)")
+                let cellHeight = (cells[i] as AnyObject).frame.size.height
+                //                0.20 is percent of cell that is visible
+                if currentHeight > (cellHeight * 0.20){
+                    if visibleIP != indexPaths?[i]{
+                        visibleIP = indexPaths?[i]
+//                        print ("visible = \(indexPaths?[i])")
+                        if let videoCell = cells[i] as? FeedTableViewCell{
+                            self.playVideoOnTheCell(cell: videoCell, indexPath: (indexPaths?[i])!)
+                        }
+                    }
+                }
+                else{
+                    if aboutToBecomeInvisibleCell != indexPaths?[i].row{
+                        aboutToBecomeInvisibleCell = (indexPaths?[i].row)!
+                        if let videoCell = cells[i] as? FeedTableViewCell{
+                            self.stopPlayBack(cell: videoCell, indexPath: (indexPaths?[i])!)
+                        }
+                        
+                    }
+                }
+            }
+        }
+    }
+    
+    func playVideoOnTheCell(cell : FeedTableViewCell, indexPath : IndexPath){
+        cell.startPlayback()
+    }
+    
+    func stopPlayBack(cell : FeedTableViewCell, indexPath : IndexPath){
+        cell.stopPlayback()
+    }
+    
+    override func tableView(_ tableView: UITableView, didEndDisplaying cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        print("end = \(indexPath)")
+        if let videoCell = cell as? FeedTableViewCell {
+            videoCell.stopPlayback()
+        }
+    }
     
     /*
      // Override to support conditional editing of the table view.

@@ -8,10 +8,11 @@
 
 import UIKit
 import Parse
+import MobileCoreServices
 
 class PostViewController: UIViewController, UINavigationControllerDelegate, UIImagePickerControllerDelegate {
     
-    @IBOutlet weak var imageToPost: UIImageView!
+    var videoToPost: PFFile!
     @IBOutlet weak var comment: UITextField!
     
     @IBAction func chooseImage(_ sender: Any) {
@@ -20,17 +21,20 @@ class PostViewController: UIViewController, UINavigationControllerDelegate, UIIm
         
         imagePicker.delegate = self
         
-        imagePicker.sourceType = UIImagePickerControllerSourceType.photoLibrary
+        imagePicker.sourceType = UIImagePickerControllerSourceType.camera
         
-        imagePicker.allowsEditing = false
+        imagePicker.mediaTypes = [kUTTypeMovie as String]
         
         self.present(imagePicker, animated: true, completion: nil)
     }
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
-        if let image = info[UIImagePickerControllerOriginalImage] as? UIImage {
-            imageToPost.image = image
-        }
+        
+        let tempVideo = info[UIImagePickerControllerMediaURL] as? NSURL
+        
+        let videoData = NSData(contentsOfFile: (tempVideo?.relativePath)!)
+
+        videoToPost = PFFile(name:"video.mov", data:(videoData as Data?)!)!
         
         self.dismiss(animated: true, completion: nil)
     }
@@ -51,13 +55,14 @@ class PostViewController: UIViewController, UINavigationControllerDelegate, UIIm
     
     @IBAction func postImage(_ sender: Any) {
         
-        if let image = imageToPost.image {
+        
+        if let video = videoToPost {
+            
             let post = PFObject(className: "Post")
             
             post["message"] = comment.text
             post["userid"] = PFUser.current()?.objectId
-            if let imageData = UIImagePNGRepresentation(image) {
-                
+            
                 let activityIndicator = UIActivityIndicatorView(frame: CGRect(x: 0, y: 0, width: 100, height: 100))
                 
                 activityIndicator.center = self.view.center
@@ -71,9 +76,8 @@ class PostViewController: UIViewController, UINavigationControllerDelegate, UIIm
                 activityIndicator.startAnimating()
                 
                 UIApplication.shared.beginIgnoringInteractionEvents()
-                
-                let imageFile = PFFile(name: "image.png", data: imageData)
-                post["imageFile"] = imageFile
+            
+                post["videoFile"] = video
                 post.saveInBackground { (success, error) in
                     
                     activityIndicator.stopAnimating()
@@ -81,20 +85,19 @@ class PostViewController: UIViewController, UINavigationControllerDelegate, UIIm
                     
                     if success {
                         
-                        self.displayAlert(title: "Image Posted", message: "Your image has been posted successfully")
+                        self.displayAlert(title: "Video Posted", message: "Your video has been posted successfully")
                         
                         self.comment.text = ""
                         
-                        self.imageToPost.image = nil
+                        self.videoToPost = nil
                         
                     } else {
                         
-                        self.displayAlert(title: "Image could not be posted", message: "Please try again later")
+                        self.displayAlert(title: "Video could not be posted", message: "Please try again later")
                         
                     }
                     
                 }
-            }
         }
         
     }
